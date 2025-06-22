@@ -1,13 +1,15 @@
-A113;Try sahaja;Susis;10;10.000000
-A112;Agile Principles;Robert Martin;113;39.990000
-A111;Clean Architecture of Business;Robert Marti;100;22.000000
-A110;Agile Software Development;Robert Martin;11;43.200000
-A109;Test Driven Development;Kent Beck;3;36.500000
-A108;Refactoring;Martin Fowler;4;40.000000
-A107;Code Complete;Steve McConnell;9;44.100000
-A106;Programming Pearls;Jon Bentley;6;37.800000
-A105;More Effective C++;Scott Meyers;8;41.250000
-A104;Clean Code;Robert Martin;12;38.750000
-A103;The Pragmatic Programmer;Andrew Hunt;17;42.000000
-a102;Effective C#;Scott Meyers;20;25.990000
+A115;Muehe;hoho;70;60.000000
+A114;Buku ABC;Suzie;135;10.000000
 A101;C++ Primer;Stanley Lippman;20;45.990000
+A102;Effective C#;Scott Meyers;20;25.990000
+A103;The Pragmatic Programmer;Andrew Hunt;17;42.000000
+A104;Clean Code;Robert Martin;12;38.750000
+A105;More Effective C++;Scott Meyers;8;41.250000
+A106;Programming Pearls;Jon Bentley;6;37.800000
+A107;Code Complete;Steve McConnell;9;44.100000
+A108;Refactoring;Martin Fowler;4;40.000000
+A109;Test Driven Development;Kent Beck;3;36.500000
+A110;Agile Software Development;Robert Martin;11;43.200000
+A111;Clean Architecture of Business;Robert Marti;100;22.000000
+A112;Agile Principles;Robert Martin;113;39.990000
+A113;Try sahaja;Susis;10;10.000000

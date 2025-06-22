@@ -1,76 +1,61 @@
-#pragma once 
+#pragma once
 
-
-
-#include <iostream> 
-
+#include <iostream>
 using namespace std;
 
+template <typename T>
+class Stack {
+private:
+    struct Node {
+        T data;
+        Node* next;
+        Node(const T& d);
+    };
+    Node* topNode;
+public:
+    Stack();
+    ~Stack();
+    void push(const T& data);
+    bool pop(T& data);
+    bool isEmpty() const;
+};
 
+// --- Node constructor ---
+template <typename T>
+Stack<T>::Node::Node(const T& d) : data(d), next(nullptr) {}
+
+// --- Stack methods ---
+template <typename T>
+Stack<T>::Stack() : topNode(nullptr) {}
 
 template <typename T>
-
-class Stack {
-
-private:
-
-    struct Node {
-
-        T data;
-
-        Node* next;
-
-        Node(const T& d) : data(d), next(nullptr) {}
-
-    };
-
-    Node* topNode;
-
-public:
-
-    Stack() : topNode(nullptr) {}
-
-    ~Stack() {
-
-        while (topNode) {
-
-            Node* toDelete = topNode;
-
-            topNode = topNode->next;
-
-            delete toDelete;
-
-        }
-
-    }
-
-    void push(const T& data) {
-
-        Node* node = new Node(data);
-
-        node->next = topNode;
-
-        topNode = node;
-
-    }
-
-    bool pop(T& data) {
-
-        if (!topNode) return false;
-
-        data = topNode->data;
-
+Stack<T>::~Stack() {
+    while (topNode) {
         Node* toDelete = topNode;
-
         topNode = topNode->next;
-
         delete toDelete;
-
-        return true;
-
     }
+}
 
-    bool isEmpty() const { return !topNode; }
+template <typename T>
+void Stack<T>::push(const T& data) {
+    Node* node = new Node(data);
+    node->next = topNode;
+    topNode = node;
+}
 
-};
+template <typename T>
+bool Stack<T>::pop(T& data) {
+    if (!topNode) return false;
+    data = topNode->data;
+    Node* toDelete = topNode;
+    topNode = topNode->next;
+    delete toDelete;
+    return true;
+}
+
+template <typename T>
+bool Stack<T>::isEmpty() const {
+    return !topNode;
+}
 

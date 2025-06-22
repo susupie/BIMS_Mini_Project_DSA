@@ -296,9 +296,10 @@ int main() {
                         cout << "Invalid input. Please enter 'y' or 'n': ";
                     }
                     if (tolower(confirm[0]) == 'y') {
-                        string title, author;
+                        string newIsbn, title, author;
                         int quantity;
                         double price;
+                        cout << "Enter New ISBN: "; getline(cin, newIsbn);
                         cout << "Enter New Title: "; getline(cin, title);
                         cout << "Enter New Author: "; getline(cin, author);
 
@@ -324,7 +325,7 @@ int main() {
                             cout << "Invalid input for price. Please enter a non-negative number." << endl;
                         }
 
-                        Book updatedBook(isbn, title, author, quantity, price);
+                        Book updatedBook(newIsbn, title, author, quantity, price);
                         Book oldBook = node->data;
                         bookBST.remove(oldBook);
                         node->data = updatedBook;
