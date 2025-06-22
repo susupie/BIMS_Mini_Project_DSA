@@ -454,7 +454,7 @@ int main() {
                 cout << "\nSort books by:\n";
                 cout << " 1. Price\n";
                 cout << " 2. Quantity\n";
-                cout << " 3. Title (Name)\n";
+                cout << " 3. Title\n";
                 cout << " 4. ISBN\n";
                 cout << " 5. Author\n";
                 cout << "Choose option: ";
@@ -477,24 +477,24 @@ int main() {
 
                 switch (sortType) {
                 case 1:
-                    sortByKey<Book, double>(tempArr, count, getPrice);
-                    cout << "Books sorted by price:\n";
+                    bubbleSortByKey<Book, double>(tempArr, count, getPrice);
+                    cout << "Books sorted by price (Bubble Sort):\n";
                     break;
                 case 2:
-                    sortByKey<Book, int>(tempArr, count, getQuantity);
-                    cout << "Books sorted by quantity:\n";
+                    selectionSortByKey<Book, int>(tempArr, count, getQuantity);
+                    cout << "Books sorted by quantity (Selection Sort):\n";
                     break;
                 case 3:
-                    sortByKey<Book, string>(tempArr, count, getTitle);
-                    cout << "Books sorted by title:\n";
+                    insertionSortByKey<Book, string>(tempArr, count, getTitle);
+                    cout << "Books sorted by title (Insertion Sort):\n";
                     break;
                 case 4:
-                    sortByKey<Book, string>(tempArr, count, getISBN);
-                    cout << "Books sorted by ISBN:\n";
+                    bubbleSortByKey<Book, string>(tempArr, count, getISBN);
+                    cout << "Books sorted by ISBN (Bubble Sort):\n";
                     break;
                 case 5:
-                    sortByKey<Book, string>(tempArr, count, getAuthor);
-                    cout << "Books sorted by author:\n";
+                    selectionSortByKey<Book, string>(tempArr, count, getAuthor);
+                    cout << "Books sorted by author (Selection Sort):\n";
                     break;
                 }
                 printBookHeader(isbnW, titleW, authorW);
