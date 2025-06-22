@@ -22,11 +22,9 @@ public:
     bool isEmpty() const;
 };
 
-// --- Node constructor ---
 template <typename T>
 Queue<T>::Node::Node(const T& d) : data(d), next(nullptr) {}
 
-// --- Queue methods ---
 template <typename T>
 Queue<T>::Queue() : frontNode(nullptr), rearNode(nullptr) {}
 

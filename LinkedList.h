@@ -25,11 +25,9 @@ public:
     Node<T>* getHead() const;
 };
 
-// --- Node constructor ---
 template <typename T>
 Node<T>::Node(const T& data) : data(data), next(nullptr) {}
 
-// --- LinkedList methods ---
 template <typename T>
 LinkedList<T>::LinkedList() : head(nullptr) {}
 

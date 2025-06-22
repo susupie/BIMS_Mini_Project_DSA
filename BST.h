@@ -31,7 +31,6 @@ public:
     void displayInOrder() const;
 };
 
-// --- Definitions ---
 
 template <typename T, typename KeyType>
 BST<T, KeyType>::BST(KeyType(*getKeyFunc)(const T&)) : root(nullptr), getKey(getKeyFunc) {}

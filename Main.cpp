@@ -14,7 +14,6 @@
 
 using namespace std;
 
-// Utility functions for Book fields
 string getISBN(const Book& b) { return b.getISBN(); }
 string getTitle(const Book& b) { return b.getTitle(); }
 string getAuthor(const Book& b) { return b.getAuthor(); }

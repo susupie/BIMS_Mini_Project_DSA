@@ -20,11 +20,9 @@ public:
     bool isEmpty() const;
 };
 
-// --- Node constructor ---
 template <typename T>
 Stack<T>::Node::Node(const T& d) : data(d), next(nullptr) {}
 
-// --- Stack methods ---
 template <typename T>
 Stack<T>::Stack() : topNode(nullptr) {}
 
@@ -58,4 +56,3 @@ template <typename T>
 bool Stack<T>::isEmpty() const {
     return !topNode;
 }
-
