@@ -1,0 +1,13 @@
+A101;C++ Primer;Stanley Lippman;10;45.99
+A102;Effective C++;Scott Meyers;5;39.50
+A103;The Pragmatic Programmer;Andrew Hunt;7;42.00
+A104;Clean Code;Robert Martin;12;38.75
+A105;More Effective C++;Scott Meyers;8;41.25
+A106;Programming Pearls;Jon Bentley;6;37.80
+A107;Code Complete;Steve McConnell;9;44.10
+A108;Refactoring;Martin Fowler;4;40.00
+A109;Test Driven Development;Kent Beck;3;36.50
+A110;Agile Software Development;Robert Martin;11;43.20
+A111;Clean Architecture;Robert Martin;15;47.00
+A112;Agile Principles;Robert Martin;13;39.99
+A113;Try New ;Sufi;100;15.990000
