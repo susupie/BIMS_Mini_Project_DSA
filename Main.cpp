@@ -15,11 +15,11 @@
 using namespace std;
 
 // Utility functions for Book fields
-string getISBN(const Book& b) { return b.isbn; }
-string getTitle(const Book& b) { return b.title; }
-string getAuthor(const Book& b) { return b.author; }
-double getPrice(const Book& b) { return b.price; }
-int getQuantity(const Book& b) { return b.quantity; }
+string getISBN(const Book& b) { return b.getISBN(); }
+string getTitle(const Book& b) { return b.getTitle(); }
+string getAuthor(const Book& b) { return b.getAuthor(); }
+double getPrice(const Book& b) { return b.getPrice(); }
+int getQuantity(const Book& b) { return b.getQuantity(); }
 
 void printLine(char ch = '=', int width = 45) {
     cout << setfill(ch) << setw(width) << "" << setfill(' ') << endl;
@@ -71,36 +71,95 @@ string toLower(const string& str) {
     return result;
 }
 
-void printBook(const Book& b) {
-    cout << left << setw(15) << b.isbn
-         << setw(25) << b.title.substr(0, 22)
-         << setw(15) << b.author.substr(0, 12)
-         << setw(8) << b.quantity
-         << fixed << setprecision(2) << setw(8) << b.price << endl;
-}
-
-void printBookHeader() {
-    cout << left << setw(15) << "ISBN"
-         << setw(25) << "Title"
-         << setw(15) << "Author"
+void printBookHeader(int isbnW, int titleW, int authorW) {
+    cout << left << setw(isbnW) << "ISBN"
+         << setw(titleW) << "Title"
+         << setw(authorW) << "Author"
          << setw(8) << "Qty"
          << setw(8) << "Price" << endl;
-    printLine('-', 71);
+    printLine('-', isbnW + titleW + authorW + 8 + 8);
+}
+
+void printBook(const Book& b, int isbnW, int titleW, int authorW) {
+    cout << left << setw(isbnW) << b.getISBN()
+         << setw(titleW) << b.getTitle()
+         << setw(authorW) << b.getAuthor()
+         << setw(8) << b.getQuantity()
+         << fixed << setprecision(2) << setw(8) << b.getPrice() << endl;
+}
+
+// --- Input validation helpers ---
+bool isPositiveInteger(const string& s) {
+    if (s.empty()) return false;
+    for (char c : s)
+        if (!isdigit(c)) return false;
+    return true;
+}
+
+bool isPositiveDouble(const string& s) {
+    if (s.empty()) return false;
+    int dotCount = 0;
+    for (char c : s) {
+        if (c == '.') {
+            dotCount++;
+            if (dotCount > 1) return false;
+        }
+        else if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+struct RestockRequest {
+    Book book;
+    int quantity;
+};
+
+void getMaxColumnWidths(const LinkedList<Book>& bookList, int& isbnW, int& titleW, int& authorW) {
+    isbnW = 4;   // "ISBN"
+    titleW = 5;  // "Title"
+    authorW = 6; // "Author"
+    Node<Book>* node = bookList.getHead();
+    while (node) {
+        isbnW = max(isbnW, (int)node->data.getISBN().length());
+        titleW = max(titleW, (int)node->data.getTitle().length());
+        authorW = max(authorW, (int)node->data.getAuthor().length());
+        node = node->next;
+    }
+    // Add some padding
+    isbnW += 2;
+    titleW += 2;
+    authorW += 2;
 }
 
 int main() {
     LinkedList<Book> bookList;
     BST<Book, string> bookBST(getISBN);
     Stack<Book> recentUpdates;
-    Queue<Book> restockQueue;
+    Queue<RestockRequest> restockQueue;
     const string filename = "books.txt";
     loadBooks(filename, bookList, bookBST);
 
+    // Calculate column widths once after loading
+    int isbnW, titleW, authorW;
+    getMaxColumnWidths(bookList, isbnW, titleW, authorW);
+
     int choice;
+    string input;
     do {
         displayMenu();
-        cin >> choice;
-        cin.ignore();
+
+        // Input validation for menu choice (0-9)
+        while (true) {
+            getline(cin, input);
+            if (isPositiveInteger(input)) {
+                choice = stoi(input);
+                if (choice >= 0 && choice <= 9) break;
+            }
+            cout << "Invalid option. Please enter a number (0-9)." << endl;
+            cout << "Choose an option: ";
+        }
 
         switch (choice) {
         case 1: { // Add Book
@@ -109,19 +168,50 @@ int main() {
                 string isbn, title, author;
                 int quantity;
                 double price;
-                cout << "Enter ISBN: "; getline(cin, isbn);
+
+                cout << "\nEnter ISBN: "; getline(cin, isbn);
                 cout << "Enter Title: "; getline(cin, title);
                 cout << "Enter Author: "; getline(cin, author);
-                cout << "Enter Quantity: "; cin >> quantity;
-                cout << "Enter Price: "; cin >> price; cin.ignore();
+
+                // Input validation for quantity
+                while (true) {
+                    cout << "Enter Quantity: ";
+                    getline(cin, input);
+                    if (isPositiveInteger(input)) {
+                        quantity = stoi(input);
+                        break;
+                    }
+                    cout << "Invalid input for quantity. Please enter a non-negative integer." << endl;
+                }
+
+                // Input validation for price
+                while (true) {
+                    cout << "Enter Price: ";
+                    getline(cin, input);
+                    if (isPositiveDouble(input)) {
+                        price = stod(input);
+                        break;
+                    }
+                    cout << "Invalid input for price. Please enter a non-negative number." << endl;
+                }
+
                 Book newBook(isbn, title, author, quantity, price);
                 bookList.addFront(newBook);
                 bookBST.insert(newBook);
                 recentUpdates.push(newBook);
                 saveBooks(filename, bookList);
+                getMaxColumnWidths(bookList, isbnW, titleW, authorW); // recalc widths
                 cout << "✅ Book added!\n";
+
                 cout << "Add another book? (y/n): ";
-                cin >> cont; cin.ignore();
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
             } while (tolower(cont) == 'y');
             break;
         }
@@ -129,150 +219,263 @@ int main() {
             char cont;
             do {
                 string isbn;
-                cout << "Enter ISBN of book to delete: ";
+                cout << "\nEnter ISBN of book to delete: ";
                 getline(cin, isbn);
                 Node<Book>* node = bookList.getHead();
                 bool found = false;
                 while (node) {
-                    if (node->data.isbn == isbn) {
+                    if (toLower(node->data.getISBN()) == toLower(isbn)) {
                         found = true;
-                        Book bookToDelete = node->data;
-                        bookList.remove(bookToDelete);
-                        bookBST.remove(bookToDelete);
-                        saveBooks(filename, bookList);
-                        cout << "🗑️ Book deleted from list.\n";
+                        cout << "\nBook found:\n";
+                        printBookHeader(isbnW, titleW, authorW);
+                        printBook(node->data, isbnW, titleW, authorW);
+                        cout << "Are you sure you want to delete this book? (y/n): ";
+                        string confirm;
+                        while (true) {
+                            getline(cin, confirm);
+                            if (confirm.length() == 1 && (tolower(confirm[0]) == 'y' || tolower(confirm[0]) == 'n')) {
+                                break;
+                            }
+                            cout << "Invalid input. Please enter 'y' or 'n': ";
+                        }
+                        if (tolower(confirm[0]) == 'y') {
+                            Book bookToDelete = node->data;
+                            bookList.remove(bookToDelete);
+                            bookBST.remove(bookToDelete);
+                            saveBooks(filename, bookList);
+                            getMaxColumnWidths(bookList, isbnW, titleW, authorW); // recalc widths
+                            cout << "🗑️ Book deleted from list.\n";
+                        } else {
+                            cout << "Deletion cancelled.\n";
+                        }
                         break;
                     }
                     node = node->next;
                 }
                 if (!found) cout << "Book not found.\n";
                 cout << "Delete another book? (y/n): ";
-                cin >> cont; cin.ignore();
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
             } while (tolower(cont) == 'y');
             break;
         }
         case 3: { // Update Book
             char cont;
             do {
-                string isbn;
-                cout << "Enter ISBN of book to update: "; getline(cin, isbn);
+                // Display all books first
+                cout << "\nAll Books in Inventory:\n";
+                printBookHeader(isbnW, titleW, authorW);
                 Node<Book>* node = bookList.getHead();
-                while (node && node->data.isbn != isbn) node = node->next;
+                while (node) {
+                    printBook(node->data, isbnW, titleW, authorW);
+                    node = node->next;
+                }
+
+                string isbn;
+                cout << "\nEnter ISBN of book to update: "; 
+                getline(cin, isbn);
+                node = bookList.getHead();
+                while (node && toLower(node->data.getISBN()) != toLower(isbn)) node = node->next;
                 if (node) {
-                    string title, author;
-                    int quantity;
-                    double price;
-                    cout << "Enter New Title: "; getline(cin, title);
-                    cout << "Enter New Author: "; getline(cin, author);
-                    cout << "Enter New Quantity: "; cin >> quantity;
-                    cout << "Enter New Price: "; cin >> price; cin.ignore();
-                    Book updatedBook(isbn, title, author, quantity, price);
-                    Book oldBook = node->data;
-                    bookBST.remove(oldBook);
-                    node->data = updatedBook;
-                    bookBST.insert(updatedBook);
-                    recentUpdates.push(updatedBook);
-                    saveBooks(filename, bookList);
-                    cout << "✏️ Book updated!\n";
-                } else {
+                    cout << "\nBook found:\n";
+                    printBookHeader(isbnW, titleW, authorW);
+                    printBook(node->data, isbnW, titleW, authorW);
+                    cout << "Do you want to update this book? (y/n): ";
+                    string confirm;
+                    while (true) {
+                        getline(cin, confirm);
+                        if (confirm.length() == 1 && (tolower(confirm[0]) == 'y' || tolower(confirm[0]) == 'n')) {
+                            break;
+                        }
+                        cout << "Invalid input. Please enter 'y' or 'n': ";
+                    }
+                    if (tolower(confirm[0]) == 'y') {
+                        string title, author;
+                        int quantity;
+                        double price;
+                        cout << "Enter New Title: "; getline(cin, title);
+                        cout << "Enter New Author: "; getline(cin, author);
+
+                        // Input validation for quantity
+                        while (true) {
+                            cout << "Enter New Quantity: ";
+                            getline(cin, input);
+                            if (isPositiveInteger(input)) {
+                                quantity = stoi(input);
+                                break;
+                            }
+                            cout << "Invalid input for quantity. Please enter a non-negative integer." << endl;
+                        }
+
+                        // Input validation for price
+                        while (true) {
+                            cout << "Enter New Price: ";
+                            getline(cin, input);
+                            if (isPositiveDouble(input)) {
+                                price = stod(input);
+                                break;
+                            }
+                            cout << "Invalid input for price. Please enter a non-negative number." << endl;
+                        }
+
+                        Book updatedBook(isbn, title, author, quantity, price);
+                        Book oldBook = node->data;
+                        bookBST.remove(oldBook);
+                        node->data = updatedBook;
+                        bookBST.insert(updatedBook);
+                        recentUpdates.push(updatedBook);
+                        saveBooks(filename, bookList);
+                        getMaxColumnWidths(bookList, isbnW, titleW, authorW); // recalc widths
+                        cout << "✏️ Book updated!\n";
+                    } else {
+                        cout << "Update cancelled.\n";
+                    }
+                }
+                else {
                     cout << "Book not found.\n";
                 }
                 cout << "Update another book? (y/n): ";
-                cin >> cont; cin.ignore();
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
             } while (tolower(cont) == 'y');
             break;
         }
         case 4: { // Search
             char cont;
             do {
-                cout << "Search by:\n";
-                cout << " 1. ISBN\n";
-                cout << " 2. Title\n";
-                cout << " 3. Author\n";
-                cout << "Choose option: ";
                 int searchType;
-                cin >> searchType; cin.ignore();
+                string input;
+                bool valid = false;
+                do {
+                    cout << "\nSearch by:\n";
+                    cout << " 1. ISBN\n";
+                    cout << " 2. Title\n";
+                    cout << " 3. Author\n";
+                    cout << "Choose option: ";
+                    getline(cin, input);
+                    if (isPositiveInteger(input)) {
+                        searchType = stoi(input);
+                        if (searchType >= 1 && searchType <= 3)
+                            valid = true;
+                        else
+                            cout << "Invalid option! Please enter 1, 2, or 3.\n";
+                    }
+                    else {
+                        cout << "Invalid input! Please enter a number (1, 2, or 3).\n";
+                    }
+                } while (!valid);
+
                 if (searchType == 1) {
                     string isbn;
                     cout << "Enter ISBN: "; getline(cin, isbn);
                     Book* found = bookBST.search(isbn);
                     if (found) {
-                        printBookHeader();
-                        printBook(*found);
-                    } else cout << "Book not found.\n";
-                } else if (searchType == 2) {
+                        printBookHeader(isbnW, titleW, authorW);
+                        printBook(*found, isbnW, titleW, authorW);
+                    }
+                    else cout << "Book not found.\n";
+                }
+                else if (searchType == 2) {
                     string keyword;
                     cout << "Enter keyword to search in book title: ";
                     getline(cin, keyword);
                     keyword = toLower(keyword);
                     Node<Book>* node = bookList.getHead();
                     bool found = false;
-                    printBookHeader();
+                    printBookHeader(isbnW, titleW, authorW);
                     while (node) {
-                        string titleLower = toLower(node->data.title);
+                        string titleLower = toLower(node->data.getTitle());
                         if (titleLower.find(keyword) != string::npos) {
-                            printBook(node->data);
+                            printBook(node->data, isbnW, titleW, authorW);
                             found = true;
                         }
                         node = node->next;
                     }
                     if (!found) cout << "No books matched the keyword.\n";
-                } else if (searchType == 3) {
+                }
+                else if (searchType == 3) {
                     string keyword;
                     cout << "Enter keyword to search in author name: ";
                     getline(cin, keyword);
                     keyword = toLower(keyword);
                     Node<Book>* node = bookList.getHead();
                     bool found = false;
-                    printBookHeader();
+                    printBookHeader(isbnW, titleW, authorW);
                     while (node) {
-                        string authorLower = toLower(node->data.author);
+                        string authorLower = toLower(node->data.getAuthor());
                         if (authorLower.find(keyword) != string::npos) {
-                            printBook(node->data);
+                            printBook(node->data, isbnW, titleW, authorW);
                             found = true;
                         }
                         node = node->next;
                     }
                     if (!found) cout << "No books matched the author keyword.\n";
-                } else {
-                    cout << "Invalid search option.\n";
                 }
+
                 cout << "Search another book? (y/n): ";
-                cin >> cont; cin.ignore();
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
             } while (tolower(cont) == 'y');
             break;
         }
         case 5: // Display All
-            cout << "All Books in Inventory:\n";
-            printBookHeader();
+            cout << "\nAll Books in Inventory:\n";
+            printBookHeader(isbnW, titleW, authorW);
             {
                 Node<Book>* node = bookList.getHead();
                 while (node) {
-                    printBook(node->data);
+                    printBook(node->data, isbnW, titleW, authorW);
                     node = node->next;
                 }
             }
             break;
         case 6: { // Sort
-            cout << "Sort books by:\n";
-            cout << " 1. Price\n";
-            cout << " 2. Quantity\n";
-            cout << " 3. Title (Name)\n";
-            cout << " 4. ISBN\n";
-            cout << " 5. Author\n";
-            cout << "Choose option: ";
-            int sortType;
-            cin >> sortType; cin.ignore();
+            char cont;
+            do {
+                int sortType;
+                cout << "\nSort books by:\n";
+                cout << " 1. Price\n";
+                cout << " 2. Quantity\n";
+                cout << " 3. Title (Name)\n";
+                cout << " 4. ISBN\n";
+                cout << " 5. Author\n";
+                cout << "Choose option: ";
+                while (true) {
+                    getline(cin, input);
+                    if (isPositiveInteger(input)) {
+                        sortType = stoi(input);
+                        if (sortType >= 1 && sortType <= 5) break;
+                    }
+                    cout << "Invalid sort option. Please enter a number from 1 to 5: ";
+                }
 
-            int count = 0;
-            Node<Book>* node = bookList.getHead();
-            Book tempArr[200];
-            while (node && count < 200) {
-                tempArr[count++] = node->data;
-                node = node->next;
-            }
+                int count = 0;
+                Node<Book>* node = bookList.getHead();
+                Book tempArr[200];
+                while (node && count < 200) {
+                    tempArr[count++] = node->data;
+                    node = node->next;
+                }
 
-            switch (sortType) {
+                switch (sortType) {
                 case 1:
                     sortByKey<Book, double>(tempArr, count, getPrice);
                     cout << "Books sorted by price:\n";
@@ -293,63 +496,164 @@ int main() {
                     sortByKey<Book, string>(tempArr, count, getAuthor);
                     cout << "Books sorted by author:\n";
                     break;
-                default:
-                    cout << "Invalid sort option.\n";
-                    return 0;
-            }
-            printBookHeader();
-            for (int i = 0; i < count; ++i) printBook(tempArr[i]);
+                }
+                printBookHeader(isbnW, titleW, authorW);
+                for (int i = 0; i < count; ++i) printBook(tempArr[i], isbnW, titleW, authorW);
+
+                cout << "Sort again? (y/n): ";
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
+            } while (tolower(cont) == 'y');
             break;
         }
         case 7: { // Recently Updated (Stack)
-            cout << "Recently Updated Books (Stack):\n";
+            cout << "\nRecently Updated Books (Stack):\n";
             Stack<Book> tempStack = recentUpdates;
             Book b;
-            printBookHeader();
+            printBookHeader(isbnW, titleW, authorW);
             while (!tempStack.isEmpty()) {
                 tempStack.pop(b);
-                printBook(b);
+                printBook(b, isbnW, titleW, authorW);
             }
             break;
         }
         case 8: { // Queue Restock Request
             char cont;
             do {
-                string isbn;
-                cout << "Enter ISBN of book to restock: ";
-                getline(cin, isbn);
+                // Display all books first
+                cout << "\nAll Books in Inventory:\n";
+                printBookHeader(isbnW, titleW, authorW);
                 Node<Book>* node = bookList.getHead();
-                while (node && node->data.isbn != isbn) node = node->next;
+                while (node) {
+                    printBook(node->data, isbnW, titleW, authorW);
+                    node = node->next;
+                }
+
+                string isbn;
+                cout << "\nEnter ISBN of book to restock: ";
+                getline(cin, isbn);
+
+                node = bookList.getHead();
+                while (node && toLower(node->data.getISBN()) != toLower(isbn)) node = node->next;
                 if (node) {
-                    restockQueue.enqueue(node->data);
+                    int restockQty;
+                    // Input validation for restock quantity
+                    while (true) {
+                        cout << "Enter quantity to restock: ";
+                        getline(cin, input);
+                        if (isPositiveInteger(input)) {
+                            restockQty = stoi(input);
+                            break;
+                        }
+                        cout << "Invalid input for quantity. Please enter a non-negative integer." << endl;
+                    }
+                    RestockRequest req{node->data, restockQty};
+                    restockQueue.enqueue(req);
                     cout << "Restock request queued.\n";
-                } else {
+                }
+                else {
                     cout << "Book not found.\n";
                 }
                 cout << "Queue another restock? (y/n): ";
-                cin >> cont; cin.ignore();
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
             } while (tolower(cont) == 'y');
             break;
         }
-        case 9: { // Process Restock Request
+        case 9: { // Process Restock Request (Admin)
+            // Show all queue first
+            cout << "\nRestock Requests in Queue:\n";
+            Queue<RestockRequest> tempQueue = restockQueue;
+            RestockRequest req;
+            int idx = 1;
+            if (tempQueue.isEmpty()) {
+                cout << "No restock requests in queue.\n";
+                break;
+            }
+            printBookHeader(isbnW, titleW, authorW);
+            while (!tempQueue.isEmpty()) {
+                tempQueue.dequeue(req);
+                cout << idx++ << ". ";
+                printBook(req.book, isbnW, titleW, authorW);
+                cout << "   Restock Qty: " << req.quantity << endl;
+            }
+
+            // Admin authentication
+            string adminPass;
+            cout << "\nEnter admin password to process restock: ";
+            getline(cin, adminPass);
+            if (adminPass != "admin123") { // Change password as needed
+                cout << "Invalid admin password. Access denied.\n";
+                break;
+            }
+
             char cont;
             do {
-                Book b;
-                if (restockQueue.dequeue(b)) {
-                    cout << "Processing restock for book:\n" << b << endl;
-                } else {
+                if (restockQueue.isEmpty()) {
                     cout << "No restock requests in queue.\n";
+                    break;
                 }
-                cout << "Process next restock request? (y/n): ";
-                cin >> cont; cin.ignore();
-            } while (tolower(cont) == 'y');
+                cout << "Do you want to process the next restock request? (y/n): ";
+                while (true) {
+                    getline(cin, input);
+                    if (input.length() == 1 && (tolower(input[0]) == 'y' || tolower(input[0]) == 'n')) {
+                        cont = input[0];
+                        break;
+                    }
+                    cout << "Invalid input. Please enter 'y' or 'n': ";
+                }
+                if (tolower(cont) == 'y') {
+                    if (restockQueue.dequeue(req)) {
+                        // Update book quantity
+                        Node<Book>* node = bookList.getHead();
+                        while (node && node->data.getISBN() != req.book.getISBN()) node = node->next;
+                        if (node) {
+                            int newQty = node->data.getQuantity() + req.quantity;
+                            node->data.setQuantity(newQty);
+                            saveBooks(filename, bookList);
+                            getMaxColumnWidths(bookList, isbnW, titleW, authorW); // recalc widths
+                            cout << "\nProcessed restock for book:\n";
+                            printBookHeader(isbnW, titleW, authorW);
+                            printBook(node->data, isbnW, titleW, authorW);
+                            cout << "   Restocked Qty: " << req.quantity << endl;
+                        } else {
+                            cout << "Book not found in inventory (may have been deleted).\n";
+                        }
+                    }
+                    // Show updated queue
+                    cout << "\nRestock Requests Remaining in Queue:\n";
+                    Queue<RestockRequest> tempQueue2 = restockQueue;
+                    int idx2 = 1;
+                    if (tempQueue2.isEmpty()) {
+                        cout << "No restock requests in queue.\n";
+                    } else {
+                        printBookHeader(isbnW, titleW, authorW);
+                        while (!tempQueue2.isEmpty()) {
+                            tempQueue2.dequeue(req);
+                            cout << idx2++ << ". ";
+                            printBook(req.book, isbnW, titleW, authorW);
+                            cout << "   Restock Qty: " << req.quantity << endl;
+                        }
+                    }
+                }
+            } while (tolower(cont) == 'y' && !restockQueue.isEmpty());
             break;
         }
         case 0:
             cout << "Exiting...\n";
             break;
-        default:
-            cout << "Invalid option. Please try again.\n";
         }
     } while (choice != 0);
 

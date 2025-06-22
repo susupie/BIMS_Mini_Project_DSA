@@ -32,6 +32,15 @@ public:
 
     Queue() : frontNode(nullptr), rearNode(nullptr) {}
 
+    // Deep copy constructor
+    Queue(const Queue& other) : frontNode(nullptr), rearNode(nullptr) {
+        Node* curr = other.frontNode;
+        while (curr) {
+            enqueue(curr->data);
+            curr = curr->next;
+        }
+    }
+
     ~Queue() {
 
         while (frontNode) {
