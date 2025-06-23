@@ -1,14 +1,12 @@
-3465;gh;gh;3;78.000000
-2145;sdf;df;3;56.000000
-9780131103640;Head First Design Patterns;Eric Freeman;11;47.990000
-9780131103628;Programming Pearls;Jon Bentley;9;38.500000
-9780131103627;The Practice of Programming;Brian W. Kernighan;2;42.000000
-9780131101630;The UNIX Programming Environment;Brian W. Kernighan;3;39.990000
-9780201633610;Design Patterns;Erich Gamma;4;55.000000
-9780134685991;Effective Java;Joshua Bloch;6;54.990000
-9780262033848;Introduction to Algorithms;Thomas H. Cormen;12;89.000000
-9781492052203;Fluent Python;Luciano Ramalho;8;64.990000
-9780132350884;Clean Code;Robert C. Martin;20;49.950000
-9780321751041;C++ Primer;Stanley B. Lippman;7;59.990000
-9780131103627;The C Programming Language;Brian W. Kernighan;10;45.500000
 9781492078005;Learning C++ Functional Programming;Wisnu Anggoro;20;52.750000
+9780131103627;The C Programming Language;Brian W. Kernighan;10;45.500000
+9780321751041;C++ Primer;Stanley B. Lippman;7;59.990000
+9780132350884;Clean Code;Robert C. Martin;20;49.950000
+9781492052203;Fluent Python;Luciano Ramalho;8;64.990000
+9780262033848;Introduction to Algorithms;Thomas H. Cormen;12;89.000000
+9780134685991;Effective Java;Joshua Bloch;6;54.990000
+9780201633610;Design Patterns;Erich Gamma;4;55.000000
+9780131101630;The UNIX Programming Environment;Brian W. Kernighan;3;39.990000
+9780131103627;The Practice of Programming;Brian W. Kernighan;2;42.000000
+9780131103628;Programming Pearls;Jon Bentley;9;38.500000
+9780131103640;Head First Design Patterns;Eric Freeman;11;47.990000
